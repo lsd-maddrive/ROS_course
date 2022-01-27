@@ -24,13 +24,13 @@ URDF или SDF это два разных формата описания ро�
   <model name="mobot" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <link name='base_link'> <!--создание базы мобильного робота-->
     </link>
-    <joint name="$wheel_steer_joint" type="revolute">  <!--создание места сочленения базы и колеса-->
+    <joint name="wheel_steer_joint" type="revolute">  <!--создание места сочленения базы и колеса-->
       <parent>base_link</parent>
-      <child>$wheel_steer_link</child>
+      <child>wheel_steer_link</child>
       <pose relative_to="base_link">0.5 0.2 0.1 1.5 0 0</pose> <!--место сочленения позиционируется относительно центра мобильной базы-->
     </joint>
-    <link name="$wheel_steer_link">  <!--создание колеса мобильного робота-->
-      <pose relative_to="$wheel_steer_joint">0 0 0 0 0 0</pose>  <!--центр колеса позиционируется относительно места сочленения-->
+    <link name="wheel_steer_link">  <!--создание колеса мобильного робота-->
+      <pose relative_to="wheel_steer_joint">0 0 0 0 0 0</pose>  <!--центр колеса позиционируется относительно места сочленения-->
     </link>
   </model>
 </sdf>
@@ -63,3 +63,86 @@ URDF или SDF это два разных формата описания ро�
 ### Как заставить робот двигаться?
 Это действительно не тривиальная задача. В открытом доступе приведено можество различных инструкций. Однако работают они далеко на со всеми версиями ROS и Gazebo.
 Это еще одна причина выбора SDF как основного инструмента моделирования роботов в ROS.
+
+```
+#include <ros/ros.h>
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
+#include <gazebo/common/common.hh>
+#include <functional>
+// Boost
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+
+namespace gazebo
+{
+  /// \brief A plugin to control a Velodyne sensor.
+  class MyPlugin : public ModelPlugin
+  {
+    /// \brief Constructor
+    public: MyPlugin() {}
+    
+    /// \brief Pointer to the model.
+    private: physics::ModelPtr model;
+
+    /// \brief Pointer to the joint.
+    private: physics::JointPtr joint;
+    
+    event::ConnectionPtr update_connection_;
+
+    /// \brief A PID controller for the joint.
+    private: common::PID pid;
+    
+    private: double velocity;
+
+    public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+    {
+      // Safety check
+      if (_model->GetJointCount() == 0)
+      {
+        std::cerr << "Invalid joint count, Velodyne plugin not loaded\n";
+        return;
+      }
+
+      // Store the model pointer for convenience.
+      this->model = _model;
+
+      // Get the first joint. We are making an assumption about the model
+      // having one joint that is the rotational joint.
+      this->joint = _model->GetJoint(_sdf->GetElement("JointSteer")->Get<std::string>());
+      
+      if (_sdf->HasElement("velocity"))
+        velocity = _sdf->Get<double>("velocity");
+
+      // Setup a P-controller, with a gain of 0.1.
+      this->pid = common::PID(0.1, 0, 0);
+
+      // Apply the P-controller to the joint.
+      this->model->GetJointController()->SetVelocityPID(
+          this->joint->GetScopedName(), this->pid);
+          
+      // listen to the update event (broadcast every simulation iteration)
+      this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
+          std::bind(&ModelPush::OnUpdate, this));
+    }
+    
+    public: void OnUpdate()
+    {
+      // Set the joint's target velocity. This target velocity is just
+      // for demonstration purposes.
+      this->model->GetJointController()->SetVelocityTarget(
+          this->joint->GetScopedName(), velocity);    
+    }
+  };
+
+  // Tell Gazebo about this plugin, so that Gazebo can call Load on this plugin.
+  GZ_REGISTER_MODEL_PLUGIN(MyPlugin)
+}
+```
+Подключение плагина к модели.
+```
+<plugin name="MyPlugin" filename="libMyPlugin.so">
+  <JointSteer>wheel_steer_joint</JointSteer>
+  <velocity>10</velocity>
+</plugin>
+```
