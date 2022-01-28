@@ -144,7 +144,53 @@ namespace gazebo
 2. "Точкой входа" в плагин является функция `Load`. В этой функции, как правило, в плагин передаются все необходимые для его работы параметры: ссылка на модель в 
 Gszebo, ссылка на модель в SDF, параметры, которые загружаются из кода на SDF.
 3. При необхожимости выполнять действия с определенной периодичность следует отслеживать событие обновления модели, которое имеет класс `event::Events::ConnectWorldUpdateBegin`. В это объект передается ссылка на `callback` функцию, которая и будет вызывать.
-Подключение плагина к модели.
+Для комиляции плагина предворительно следует создать пакет. В нем создать папки `sdf` и `src`, скоротых соответственно будут помещены модель и код плагина.
+После создания пакета автоматически были созданы файлы `CMakeList.txt` и `package.xml`.
+В файл `CMakeList.txt` следует поместить следующее:
+```
+cmake_minimum_required(VERSION 3.0.2)
+project(PackageName)
+
+find_package(catkin REQUIRED COMPONENTS
+  gazebo_ros
+  roscpp
+  xacro
+)
+
+find_package(gazebo REQUIRED)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
+)
+link_directories(${GAZEBO_LIBRARY_DIRS})
+list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}")
+
+
+## Declare a C++ library
+add_library(MyPlugin
+   src/MyPlugin.cc
+)
+
+target_link_libraries(MyPlugin
+  ${GAZEBO_LIBRARIES}
+)
+```
+В файл `Pakage.xml` следует поместить следующее:
+```
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>xacro</build_depend>
+  <build_export_depend>gazebo_ros</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>xacro</build_export_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>xacro</exec_depend>
+```
+После успешной компиляции плагина можно его подключить к нашей модели.
+Подключение плагина к модели выглядит следующим образом:
 ```
 <plugin name="MyPlugin" filename="libMyPlugin.so">
   <JointSteer>wheel_steer_joint</JointSteer>
