@@ -11,3 +11,11 @@ roslaunch turtlebot3_gazebo turtlebot3_autorace.launch
 roslaunch turtlebot3_bringup turtlebot3_remote.launch
 ```
 И наконец создадим третье окно терминала и в нем уже запустим RVIZ одноименной командой.
+
+![default_RVIZ](../assets/default_RVIZ.png)
+
+![TF_error](../assets/TF_error.png)
+
+![robot_RVIZ](../assets/robot_RVIZ.png)
+
+![rviz_tf](../assets/rviz_tf.png)
