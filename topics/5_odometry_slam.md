@@ -31,3 +31,54 @@ SLAM — Simultaneous Localization And Mapping — метод одновреме
 
 В рамках данного курса будут рассматриваться реализации SLAM на основе лидара и колесной одометрии робота.
 В конце необходимо провести эксперимент и сравнить качество работы GMapping и hector_mapping. 
+
+Итак, разобьем по шагам, что нужно сделать чтобы собрать полноценно работующую систему локализации и картографирования:
+1) Определемся с роботом. Нужно понять что у нас есть на борту. Пусть это будут лидар и энкодеры.
+2) Если у нас есть энкодеры на колесах, то мы имеем возможность подлючить колесную одометрию (нужно про это не забыть). В случае реального робота придется писать свою ноду для передачи одометрии. Подробное описание с примером можно посмотреть тут: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom. Если в нашем проекте мы используем модель turlebot 3 из Gazebo, то специально подводить колесную одометрию там не нужно, однако для свое собственной модели придется модернизировать плагин и в ней также добавлять публикацию одометрии.
+3) Следует запустить пакет для работы с лидаром. В случае модели лидар подключается автоматически, когда мы подключаем плагин лидара в модели. Рельный лидар слудет подключить в компьютеру и найти в интернете ПО для работы с ним и подключения его к ROS, например https://github.com/YDLIDAR/ydlidar_ros - пакет для работы c YDlidar.
+4)  Перед тем, как мы сможем увидеть в RVIZ данные с лидара необходимо сделать преобразование координат мобльная база -> лидар. 
+```
+<node pkg="tf" type="static_transform_publisher" name="laser_broadcaster" args="0.13125 0 0.14625 0 0 0 base_footprint hokuyo_link 30" />
+```
+5) Чтобы проверить работу лидара необходимо создать в модели какие-нибудь препятствия. Для этого существуют готовые миры, например:
+```
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_house.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+```
+![laser](../assets/laser.png)
+6) Теперь подключим в нашему launch-файлу hector_mapping. Он принимает следующие параметры:
+* фрейм карты
+* фрейм одометрии
+* фрейм робота
+* размер карты
+* начальная позиция робота на карте
+* разрешение карты
+* и другие.
+```
+    <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+        <param name="map_frame"  value="map" />
+        <param name="odom_frame" value="odom" />
+        <param name="base_frame" value="base_footprint" />
+
+        <param name="use_tf_scan_transformation"  value="true"/>
+        <param name="use_tf_pose_start_estimate"  value="false"/>
+        <param name="pub_map_scanmatch_transform" value="false" />
+        <param name="pub_map_odom_transform"      value="true"/>
+        <param name="tf_map_scanmatch_transform_frame_name" value="scanmatcher_frame" />
+
+        <param name="map_resolution" value="0.025"/>
+        <param name="map_size"       value="1024"/>
+        <param name="map_start_x"    value="0.5"/>
+        <param name="map_start_y"    value="0.5" />
+    </node>
+```
+![hector_slam](../assets/hector_slam.png)
+
+### Задание:
+По аналогии с примером, приведенным выше, следует настроить gmapping и сравнить качество его работы с hector mapping. 
