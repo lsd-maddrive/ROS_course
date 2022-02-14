@@ -49,6 +49,60 @@ float32[] intensities    # intensity data [device-specific units].  If your
 как и читать из одного. Более того, нода может писать и сама же читать сообщения из топика в том случае, если это необходима (кстати такое имеет место быть,
 например, в move_base). 
 
+```
+import rospy   #подключение библиотеки rospy
+from std_msgs.msg import String                 
+#callback функция - вызывается всякий раз при возникновении отпределенного собития
+#Выводит в консоль отчет о принятии узлом сообщения
+def callback(data):      
+
+    #Вывод на экран сообщения о приеме     
+    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)  
+    
+def listener():   
+    #Функция инициализации узла-приемника                                                   
+    rospy.init_node('listener', anonymous=True)
+
+    #Инициализация приемника (функция принимает: 
+    #название топика, тип message, функцию обработки принятого сообщения)
+    rospy.Subscriber("chatter", String, callback)                   
+                                                                    
+    rospy.spin()
+
+if __name__ == '__main__':
+    listener()
+```
+
+```
+import rospy #подключение библиотеки rospy
+from std_msgs.msg import String
+
+#Функция инициализации узла и отправки сообщений
+def talker():       
+    #Инициализации передатчика (принимает: имя топика, тип message, объем очереди)                                           
+    pub = rospy.Publisher('chatter', String, queue_size=10)  
+
+    #Инициализация узла типа 'talker'   
+    rospy.init_node('talker', anonymous=True)                   
+    rate = rospy.Rate(10) #10hz
+
+    #цикл повторяетс до тех пор, пока ROS запущен
+    while not rospy.is_shutdown():      
+
+        #формирование сообщения из фразы и текущего времени                        
+        hello_str = rospy.get_caller_id() + "hello world %s" % rospy.get_time()    
+
+        #вывод в консоль сообщения (для отладки)     
+        rospy.loginfo(hello_str)  
+
+        #передача сообщения по топику                              
+        pub.publish(hello_str)                                  
+        rate.sleep()
+
+if __name__ == '__main__':
+    talker()
+```
+
 ### Service
 
 
