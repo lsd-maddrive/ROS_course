@@ -1,44 +1,44 @@
 # Установка и запуск TurtleBot3.
 > В вводной части уже рассказывалось об основном способе установки нужных нам пакетов. Здесь же мы воспользуемся другим методом: клонируем репозиторий с github и скомпилируем пакеты.
 >	Для этого первым делом создадим рабочее пространство ROS
-```
+```bash
 mkdir workspace
 catkin_init_workspace
 ```
 >	В появившейся в домашнем каталоге папке workspace создадим папку src и скачаем код из репозитория
-```
+```bash
 mkdir src
 git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3.git
 ```
 > Теперь осталось только скомпилировать пакеты и можно пользоваться. Делать это нужно из папки workspace.
-```
+```bash
 catkin_make
 ```
 
 ## Запуск TutrtleBot3
 > Перед запуском своих пакетов или тех пакетов, которые сами собирали нужно их подтянуть в рабочее пространство ROS
-```
+```bash
 source devel/setup.bash
 ```
 > Запуск модели в Gazebo.
-```
+```bash
 export TURTLEBOT3_MODEL=waffle_pi
 roslaunch turtlebot3_gazebo turtlebot3_house.launch
 ```
 > Телеуправление роботом.
-```
+```bash
 roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch 
 ```
 >	Включение SLAM, RVIZ и построение изображения карты.
-```
+```bash
 roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=hector
 ```
 >	Для сохранения карты исследованной области можно использовать команду
-```
+```bash
 rosrun map_server map_saver -f ~/map
 ```
 >	Когда местность исследована, и карта изучена, можно спокойно запускать робота ездить в автономном режиме. Для этого запустим навигационный пакеты.
-```
+```bash
 roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/map.yaml
 ```
 ## А теперь сделаем все по-другому!
