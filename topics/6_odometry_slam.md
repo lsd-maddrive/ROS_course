@@ -37,11 +37,11 @@ SLAM — Simultaneous Localization And Mapping — метод одновреме
 2) Если у нас есть энкодеры на колесах, то мы имеем возможность подлючить колесную одометрию (нужно про это не забыть). В случае реального робота придется писать свою ноду для передачи одометрии. Подробное описание с примером можно посмотреть тут: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom. Если в нашем проекте мы используем модель turlebot 3 из Gazebo, то специально подводить колесную одометрию там не нужно, однако для свое собственной модели придется модернизировать плагин и в ней также добавлять публикацию одометрии.
 3) Следует запустить пакет для работы с лидаром. В случае модели лидар подключается автоматически, когда мы подключаем плагин лидара в модели. Рельный лидар слудет подключить в компьютеру и найти в интернете ПО для работы с ним и подключения его к ROS, например https://github.com/YDLIDAR/ydlidar_ros - пакет для работы c YDlidar.
 4)  Перед тем, как мы сможем увидеть в RVIZ данные с лидара необходимо сделать преобразование координат мобльная база -> лидар. 
-```
+```xml
 <node pkg="tf" type="static_transform_publisher" name="laser_broadcaster" args="0.13125 0 0.14625 0 0 0 base_footprint hokuyo_link 30" />
 ```
 5) Чтобы проверить работу лидара необходимо создать в модели какие-нибудь препятствия. Для этого существуют готовые миры, например:
-```
+```xml
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_house.world"/>
     <arg name="paused" value="false"/>
@@ -60,7 +60,7 @@ SLAM — Simultaneous Localization And Mapping — метод одновреме
 * начальная позиция робота на карте
 * разрешение карты
 * и другие.
-```
+```xml
     <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
         <param name="map_frame"  value="map" />
         <param name="odom_frame" value="odom" />
