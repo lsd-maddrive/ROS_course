@@ -169,38 +169,88 @@ Action пошел еще дальше. Он перенял идею запрос
 ```
 import rospy
 import actionlib
+from actionlib.msg import TestAction, TestResult, TestFeedback
 
- 
-def resp(mess):
- if mess.data==True:
-    return  SetBoolResponse(True, 'data is true')
- else:
-    return  SetBoolResponse(False, 'data is false')
- 
- 
-rospy.init_node('service_respond')
- 
-service=rospy.Service('service_example',SetBool,resp)
- 
-rospy.spin()
+class exampleAction():
+    #Создаем объект сообщения для обратной связи
+    _feedback=TestFeedback()
+    
+    #Создаем объект сообщения для отправки результата
+    _result=TestResult()
+
+    def __init__(self):
+        # Создаем action server с типом SimpleActionServer
+        self.act_server = actionlib.SimpleActionServer('action_example', TestAction, execute_cb=self.execute_cb, auto_start = False)
+        self.act_server.start()
+
+
+    def execute_cb(self, goal):
+        r = rospy.Rate(100)       
+        i = 0
+        while i < goal.goal:
+            #Инкрементируем переменную i до тех пор, пока она не станет равна задаю
+            i = i + 1
+            #Формируем и отправляем обратную связь клиенту
+            self._feedback.feedback = i
+            self.act_server.publish_feedback(self._feedback)
+            
+            #Задержка для имитации длительной затратной работы сервера
+            r.sleep()
+        
+        #Формируем и отправляем результат клиенту
+        self._result.result = i
+        self.act_server.set_succeeded(self._result)
+
+if __name__ == '__main__':
+    try:
+        # Initializes a rospy node so that the SimpleActionClient can
+        # publish and subscribe over ROS.
+        rospy.init_node('resp_action')
+        a=exampleAction()
+    except rospy.ROSInterruptException:
+        pass
 ```
 и клиент:
 ```
 import rospy
-from std_srvs.srv import SetBool
-import sys
- 
-rospy.init_node('use_service')
- 
-#wait the service to be advertised, otherwise the service use will fail
-rospy.wait_for_service('service_example')
- 
-#setup a local proxy for the service
-srv=rospy.ServiceProxy('service_example',SetBool)
- 
-#use the service and send it a value. In this case, I can send 1 or 0
-service_example=srv(True)
- 
-#print the result from the service
-print(service_example)
+import actionlib
+from actionlib.msg import TestAction, TestGoal
+
+#прием результата от сервера
+def doneCallback(status,mess):
+    print(f'result = {mess.result}')
+    print(f'goal status = {status}')
+
+#прием обратной связи от сервера о состоянии процесса
+def fbCallback(mess):
+    print(f'inc i = {mess.feedback}')
+
+def action_example():
+    # Создаем SimpleActionClient задаем его тип (из стандартных)
+    client = actionlib.SimpleActionClient('action_example', TestAction)
+    # Ждем запуска сервера
+    client.wait_for_server()
+
+    # Создаем в action server задание
+    goal = TestGoal()
+    goal.goal=5
+
+    # Отправляем в action server задание
+    client.send_goal(goal, done_cb=doneCallback, feedback_cb=fbCallback)
+
+    #Ждем завершения работы сервера
+    client.wait_for_result()
+
+if __name__ == '__main__':
+    try:
+        # Инициализируем ноду SimpleActionClient
+        rospy.init_node('use_action')
+        action_example()
+    except rospy.ROSInterruptException:
+        pass
 ```
+
+### Задание
+1. Создать `SimpleActionClient` с типом `MoveBaseAction` для автоматичекой отправки в move_base координат целевой точки.
+2. Модифицировать эту программу так, чтобы при завершении движения робота к одной точке ему приходило целеуказание на движение к следующей точке.
+Замечание: Move_base в процессе работы отправляет результат несколько раз. `done_cb` принимает два аргумента. Первый это состояние процесса, второй это результат. Передавать координаты новой цели следует только после того, как результат окончательно достигнут (status=3).
