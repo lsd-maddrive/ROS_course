@@ -24,14 +24,14 @@
 
 ### Настройка move_base
 В целом навигационный пакет имеет слишком большое количество параметров. Поэтому определять их все в launch-файле не рекомендуется. Для этого существуюм конфигурационные файлы с расширением `*.yaml`. Для использования таких файлов используется следующий синтаксис:
-```
+```yaml
 node_name:
  param_name: value
  group_param:
   param_name: value
 ```
 Для загрузки конфигурационного файла внутри инициализации ноды нужна следующая команда:
-```
+```xml
 <rosparam file="$(find <package_name>)/.../path/.../<file_name>.yaml" command="load" ns="<namespace_name>" />
 ```
 ### Основные параметры 
@@ -47,7 +47,7 @@ node_name:
 
 К основным параметрам costmap относятся:
 * plugins (static_layer, obstacle_layer and inflation_layer) - слои работы карты. Обычно для глобальной используют `static_layer and inflation_layer`, а для локальной `obstacle_layer and inflation_layer`. Запись будет иметь следующий вид:
-```
+```yaml
 plugins:
  - {name: obstacles,                 type: "costmap_2d::ObstacleLayer"}
  - {name: inflation,                 type: "costmap_2d::InflationLayer"}
