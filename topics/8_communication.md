@@ -48,7 +48,15 @@ float32[] intensities    # intensity data [device-specific units].  If your
 и один читает сообщения и обрабатывает информацию. На самом деле ROS устроен таким образом, что в один и тот же топик могут писать несколько узлов, 
 как и читать из одного. Более того, нода может писать и сама же читать сообщения из топика в том случае, если это необходима (кстати такое имеет место быть,
 например, в move_base). 
-
+Следующий код наглядно демонстрирует, как создаются ноды для отправки и приема топиков. Рекомендуется тщательно изучить логику программ и запустить самостоятельно. Для добавления в пакет скриптов на python необходимо сделать следующую запись в файле CMakelist:
+```
+catkin_install_python(PROGRAMS
+  scripts/talker.py 
+  scripts/listener.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+```
+Далее приведен код ноды, прослушивающей сообщения:
 ```
 import rospy   #подключение библиотеки rospy
 from std_msgs.msg import String                 
@@ -72,7 +80,7 @@ def listener():
 if __name__ == '__main__':
     listener()
 ```
-
+И наконец отправим сообщения в эфир:
 ```
 import rospy #подключение библиотеки rospy
 from std_msgs.msg import String
@@ -104,7 +112,95 @@ if __name__ == '__main__':
 ```
 
 ### Service
-
+Идея работы сервиса в некотором смысле похожа на работу топика, но имеет одно существенное отличие. При работе топиков любая нода может в него писать и из него читать информацию. Сервис же образует связь между двумя нодами: сервером и клиентом. Связь образуется по принципу: клиент формирует и оптравляет запрос, сервер запрос принимает, обрабатывает и отправлет клиенту ответ.
+Протестируем работу этой арихитектуры со стандартным сервисом `std_srvs/SetBool.srv`. 
+```
+bool data
+---
+bool success 
+string message 
+```
+В этом сервисе клиент отправляет запрос в виде логической переменной и принимает в ответ лигическую переменную и строку.
+Ниже приведен код сервера:
+```
+import rospy
+#импортирует стандартный тип сервиса SetBool - запрос, SetBoolResponse - ответ
+from std_srvs.srv import SetBool, SetBoolResponse
+ 
+def resp(mess):
+ if mess.data==True:
+    return  SetBoolResponse(True, 'data is true')
+ else:
+    return  SetBoolResponse(False, 'data is false')
+ 
+ 
+rospy.init_node('service_respond')
+ 
+service=rospy.Service('service_example',SetBool,resp)
+ 
+rospy.spin()
+```
+и клиента:
+```
+import rospy
+from std_srvs.srv import SetBool
+import sys
+ 
+rospy.init_node('use_service')
+ 
+#wait the service to be advertised, otherwise the service use will fail
+rospy.wait_for_service('service_example')
+ 
+#setup a local proxy for the service
+srv=rospy.ServiceProxy('service_example',SetBool)
+ 
+#use the service and send it a value. In this case, I can send 1 or 0
+service_example=srv(True)
+ 
+#print the result from the service
+print(service_example)
+```
 
 ### Action
+Action пошел еще дальше. Он перенял идею запроса-ответа у сервисов. Однако снова есть весомые отличия. Action предназначен для длительных операций. Если внимательно посмотреть на код из предыдущего примера, то можно заметить, что клиент сидит и ждет ответа от сервера. Если же серверу нужно длительное время на формирование ответа, такое поведение клиента не желательно. Поэтому в таком случае рекомендуется использовать Action. В Action существет возможноть получения промежуточных ответов о состоянии операций производимых серверов. 
+Например, с помощью Action реализована связь с move_base. С помощью Action в move_base отправляется целевая точка для навигации, в процессе движения клиент получает информацию о том, как проходит движение, и в конце сервер отправляет сообщение об успешном (или нет) завершении движения.
+Снова приведем простецшие примеры клиента и сервера. 
+Сервер:
+```
+import rospy
+import actionlib
 
+ 
+def resp(mess):
+ if mess.data==True:
+    return  SetBoolResponse(True, 'data is true')
+ else:
+    return  SetBoolResponse(False, 'data is false')
+ 
+ 
+rospy.init_node('service_respond')
+ 
+service=rospy.Service('service_example',SetBool,resp)
+ 
+rospy.spin()
+```
+и клиент:
+```
+import rospy
+from std_srvs.srv import SetBool
+import sys
+ 
+rospy.init_node('use_service')
+ 
+#wait the service to be advertised, otherwise the service use will fail
+rospy.wait_for_service('service_example')
+ 
+#setup a local proxy for the service
+srv=rospy.ServiceProxy('service_example',SetBool)
+ 
+#use the service and send it a value. In this case, I can send 1 or 0
+service_example=srv(True)
+ 
+#print the result from the service
+print(service_example)
+```
