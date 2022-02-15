@@ -49,7 +49,7 @@ float32[] intensities    # intensity data [device-specific units].  If your
 как и читать из одного. Более того, нода может писать и сама же читать сообщения из топика в том случае, если это необходима (кстати такое имеет место быть,
 например, в move_base). 
 Следующий код наглядно демонстрирует, как создаются ноды для отправки и приема топиков. Рекомендуется тщательно изучить логику программ и запустить самостоятельно. Для добавления в пакет скриптов на python необходимо сделать следующую запись в файле CMakelist:
-```
+```CMake
 catkin_install_python(PROGRAMS
   scripts/talker.py 
   scripts/listener.py
@@ -57,7 +57,7 @@ catkin_install_python(PROGRAMS
 )
 ```
 Далее приведен код ноды, прослушивающей сообщения:
-```
+```python
 import rospy   #подключение библиотеки rospy
 from std_msgs.msg import String                 
 #callback функция - вызывается всякий раз при возникновении отпределенного собития
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     listener()
 ```
 И наконец отправим сообщения в эфир:
-```
+```python
 import rospy #подключение библиотеки rospy
 from std_msgs.msg import String
 
@@ -122,7 +122,7 @@ string message
 ```
 В этом сервисе клиент отправляет запрос в виде логической переменной и принимает в ответ лигическую переменную и строку.
 Ниже приведен код сервера:
-```
+```python
 import rospy
 #импортирует стандартный тип сервиса SetBool - запрос, SetBoolResponse - ответ
 from std_srvs.srv import SetBool, SetBoolResponse
@@ -141,7 +141,7 @@ service=rospy.Service('service_example',SetBool,resp)
 rospy.spin()
 ```
 и клиента:
-```
+```python
 import rospy
 from std_srvs.srv import SetBool
 import sys
@@ -166,7 +166,7 @@ Action пошел еще дальше. Он перенял идею запрос
 Например, с помощью Action реализована связь с move_base. С помощью Action в move_base отправляется целевая точка для навигации, в процессе движения клиент получает информацию о том, как проходит движение, и в конце сервер отправляет сообщение об успешном (или нет) завершении движения.
 Снова приведем простецшие примеры клиента и сервера. 
 Сервер:
-```
+```python
 import rospy
 import actionlib
 from actionlib.msg import TestAction, TestResult, TestFeedback
@@ -211,7 +211,7 @@ if __name__ == '__main__':
         pass
 ```
 и клиент:
-```
+```python
 import rospy
 import actionlib
 from actionlib.msg import TestAction, TestGoal
