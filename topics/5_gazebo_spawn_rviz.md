@@ -218,7 +218,8 @@ target_link_libraries(MyPlugin
   <param name="robot_description" command="$(find xacro)/xacro $(find <package_name>)/sdf/model.sdf.xacro" />
   <!--можно загрузить любой другой мир из доступных в Gazebo или создать и сохранить свой-->
   <include file="$(find gazebo_ros)/launch/empty_world.launch"/> 
-  <node name="mobot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="-sdf -param robot_description -model <model_name>" />
+  <node name="mobot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" 
+        args="-sdf -param robot_description -model <model_name>" />
 </launch>
 ```
 Полезной функией является возможность разместить робота в нужной точке. Для этого нужно добавить в аргументы узла `mobot_spawn` следующую команду `-x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos)`.
