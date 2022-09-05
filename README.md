@@ -5,7 +5,7 @@ The place for ROS course development
 
 ## Требования
 
-- Операционная система Ubuntu 20.04
+- Операционная система Ubuntu 20.04 - на [этой странице](https://releases.ubuntu.com/20.04.5/) выбираем Desktop вариант
 - Установленный ROS Noetic - [ссылка на офф инструкцию](http://wiki.ros.org/noetic/Installation/Ubuntu)
 - Установленный [VSCode](https://code.visualstudio.com/) или другая удобная среда для разработки
 - В VSCode поставьте плагины (легко ищутся в Extensions Marketplace):
