@@ -11,3 +11,4 @@ The place for ROS course development
 - В VSCode поставьте плагины (легко ищутся в Extensions Marketplace):
   - ms-iot.vscode-ros
   - ms-python.python
+- Готовность задавать вопросы, если что-то из тем не понятно!

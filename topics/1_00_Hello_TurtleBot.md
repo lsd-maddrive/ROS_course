@@ -212,6 +212,7 @@ TURTLEBOT3_MODEL=waffle roslaunch turtlebot3_navigation move_base.launch
 - Давайте кататься на карте `turtlebot3_house.launch.py` и `turtlebot3_autorace.launch`.
 - В данных Image поменяйте ImageTopic на `/camera/rgb/image_raw` и покатайтесь. Как думаете, что это за информация?
 - Попробуйте отключить RobotModel, включить TF и покататься по карте. Подсказка, TF - это разные системы координат. Как Вы думаете, почему часть TF стоит на месте, а часть двигается? Какие TF стоят на месте? Отключить часть TF можно в меню TF->Frames.
+- Попробуйте поменять модель робота на другую: `waffle_pi`, `burger`.
 
 ## Вопросики =)
 
