@@ -3,6 +3,9 @@
 - [Почему пакеты - это важно?](#почему-пакеты---это-важно)
 - [Как мне создать локальный workspace?](#как-мне-создать-локальный-workspace)
 - [Готовим тарелку!](#готовим-тарелку)
+- [Чему мы научились?](#чему-мы-научились)
+- [Задачки](#задачки)
+- [Вопросы](#вопросы)
 
 Привет, до этого момента мы запускали уже готовые программы в разных терминалах, чтобы все работало. Давай теперь начнем организовывать свое рабочее место, чтобы творить свои интересные штуки!
 
@@ -75,17 +78,17 @@ catkin init
 И должны увидеть что-то наподобии:
 
 ```
-Initializing catkin workspace in `/home/alexey/catkin_ws_course`.
+Initializing catkin workspace in `/home/user/catkin_ws_course`.
 ------------------------------------------------------------------
 Profile:                     default
 Extending:             [env] /opt/ros/noetic
-Workspace:                   /home/alexey/catkin_ws_course
+Workspace:                   /home/user/catkin_ws_course
 ------------------------------------------------------------------
-Build Space:       [missing] /home/alexey/catkin_ws_course/build
-Devel Space:       [missing] /home/alexey/catkin_ws_course/devel
-Install Space:      [unused] /home/alexey/catkin_ws_course/install
-Log Space:         [missing] /home/alexey/catkin_ws_course/logs
-Source Space:      [missing] /home/alexey/catkin_ws_course/src
+Build Space:       [missing] /home/user/catkin_ws_course/build
+Devel Space:       [missing] /home/user/catkin_ws_course/devel
+Install Space:      [unused] /home/user/catkin_ws_course/install
+Log Space:         [missing] /home/user/catkin_ws_course/logs
+Source Space:      [missing] /home/user/catkin_ws_course/src
 DESTDIR:            [unused] None
 ------------------------------------------------------------------
 Devel Space Layout:          linked
@@ -104,7 +107,7 @@ Workspace configuration appears valid.
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-WARNING: Source space `/home/alexey/catkin_ws_course/src` does
+WARNING: Source space `/home/user/catkin_ws_course/src` does
 not yet exist.
 ------------------------------------------------------------------
 ```
@@ -115,4 +118,139 @@ not yet exist.
 
 ## Готовим тарелку!
 
+Отлично, пространство мы создали, теперь сделаем свой пакет.
 
+Первое, что нужно сделать - это создать директорию `src` внутри пространства:
+
+```bash
+# Обязательно внутри catkin_ws
+mkdir src
+# Ии заходим внутрь
+cd src
+```
+
+Теперь создаем пакет с названием `super_robot_package`:
+
+> Если хочешь, можешь создать пакет со своим названием, но дальше тогда придется во всех командах заменять имя.
+
+```bash
+catkin create pkg super_robot_package
+```
+
+В выводе должен получиться подобный вывод:
+
+```bash
+Creating package "super_robot_package" in "/home/user/catkin_ws/src"...
+Created file super_robot_package/package.xml
+Created file super_robot_package/CMakeLists.txt
+Successfully created package files in /home/user/catkin_ws/src/super_robot_package.
+```
+
+После создания пакета очень важно его собрать! Для этого используем команду для сборки:
+
+```bash
+catkin build super_robot_package
+```
+
+В выводе увидите что-то такое:
+
+```bash
+NOTE: Forcing CMake to run for each package.
+-----------------------------------------------------------
+[build] Found 1 packages in 0.0 seconds.
+[build] Updating package.
+Starting  >>> catkin_tools_prebuild
+Finished  <<< catkin_tools_prebuild                [ 2.1 seconds ]
+Starting  >>> super_robot_package
+Finished  <<< super_robot_package                  [ 1.9 seconds ]
+[build] Summary: All 2 packages succeeded!                                                                                                                                                                         
+```
+
+Отлично! Как нам теперь проверить, что система ROS видит наш пакет? Познакомимся с утилитой, которая работает с пакетами системы ROS - `rospack`!
+
+```bash
+# Посмотрим список пакетов в системе
+rospack list
+```
+
+В выводе видим:
+
+```bash
+...
+turtlebot3_gazebo /opt/ros/noetic/share/turtlebot3_gazebo
+turtlebot3_msgs /opt/ros/noetic/share/turtlebot3_msgs
+turtlebot3_navigation /opt/ros/noetic/share/turtlebot3_navigation
+turtlebot3_slam /opt/ros/noetic/share/turtlebot3_slam
+turtlebot3_teleop /opt/ros/noetic/share/turtlebot3_teleop
+turtlesim /opt/ros/noetic/share/turtlesim
+urdf /opt/ros/noetic/share/urdf
+urdf_parser_plugin /opt/ros/noetic/share/urdf_parser_plugin
+urdf_sim_tutorial /opt/ros/noetic/share/urdf_sim_tutorial
+urdf_tutorial /opt/ros/noetic/share/urdf_tutorial
+visualization_marker_tutorials /opt/ros/noetic/share/visualization_marker_tutorials
+visualization_msgs /opt/ros/noetic/share/visualization_msgs
+voxel_grid /opt/ros/noetic/share/voxel_grid
+webkit_dependency /opt/ros/noetic/share/webkit_dependency
+xacro /opt/ros/noetic/share/xacro
+xmlrpcpp /opt/ros/noetic/share/xmlrpcpp
+```
+
+Но в этом выводе тяжело искать, давайте отфильтруем этот список, поискав наш пакет:
+
+```bash
+rospack list | grep super_robot_package
+```
+
+Хм.. Ничего? То есть, наш пакет не видно? Давайте посмотрим, где ROS ищем пакеты с помощью переменной окружения `ROS_PACKAGE_PATH`:
+
+```bash
+echo $ROS_PACKAGE_PATH
+# /opt/ros/noetic/share
+```
+
+Ага, такс, а как заставить ROS искать пакеты в нашем WS (workspace)? Нужно сделать похожее с тем, что мы делали, когда устанавливали ROS.
+
+Для системного пространства мы использовали команду `source /opt/ros/noetic/setup.bash`
+
+Для локального WS мы используем команду:
+
+```bash
+source $HOME/catkin_ws/devel/setup.bash
+```
+
+После ее выполнения проверь наличие пакета!
+
+```bash
+rospack list | grep super_robot_package
+# super_robot_package /home/user/catkin_ws/src/super_robot_package
+```
+
+Оп, вот и пакет нашелся, значит он теперь учитывается в системе ROS.
+
+:muscle: Убедись с помощью проверки переменной ROS_PACKAGE_PATH, где ищутся теперь пакеты.
+
+> Но ведь команда source работает только для нынешней сессии shell, чтобы она вызывалась в каждом терминале, как обычно, прописывай в `~/.bashrc` руками или командой `echo "source \$HOME/catkin_ws/devel/setup.bash" >> ~/.bashrc`.
+
+## Чему мы научились?
+
+- Теперь мы можем создавать локальное рабочее пространство (WS)
+- Подключать WS в систему ROS, чтобы учитывались пакеты внутри
+- А еще создать в нем пакеты
+- Собирать пакеты
+- И с помощью `rospack` выводить список пакетов и искать по ним!
+
+Молодцы, круто!
+
+## Задачки
+
+- Как с помощью утилиты `rospack` определять путь до конкретного пакета, не используя grep? Подсказка, все команды `rospack` можно посмотреть с помощью `rospack -h`.
+- Определите расположение пакетов `turtlebot3_gazebo` и других, которые мы ранее использовали.
+- Мы знаем, что WS находится по пути `~/catkin_ws/src` и можем перейти в пакеты внутри, но что если пакеты где-то в другом месте? Воспользуйтесь утилитой `roscd` и разберитесь, как перейти в диреткорию пакета с помощью этой команды.
+
+## Вопросы
+
+- Зачем нужно рабочие пространства и пакеты в ROS?
+- Как нужно организовывать исходные коды программ и материалы по пакетам?
+- Какими командами создается рабочее пространство? Что нужно сделать после его создания?
+- Какие этапы создания пакета врабочем пространстве?
+- В какой переменной находятся пути, по которым ROS ищет пакеты?

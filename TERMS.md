@@ -12,3 +12,10 @@
 - Сервер параметров
 - Ядро (мастер) - roscore
 - Стек пакетов*
+
+## Утилиты
+
+rosrun
+roslaunch
+rospack
+roscd
