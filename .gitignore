@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 *.ZoneIdentifier
+
+super_robot_package

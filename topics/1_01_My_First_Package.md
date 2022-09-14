@@ -78,17 +78,17 @@ catkin init
 И должны увидеть что-то наподобии:
 
 ```
-Initializing catkin workspace in `/home/user/catkin_ws_course`.
+Initializing catkin workspace in `/home/user/catkin_ws`.
 ------------------------------------------------------------------
 Profile:                     default
 Extending:             [env] /opt/ros/noetic
-Workspace:                   /home/user/catkin_ws_course
+Workspace:                   /home/user/catkin_ws
 ------------------------------------------------------------------
-Build Space:       [missing] /home/user/catkin_ws_course/build
-Devel Space:       [missing] /home/user/catkin_ws_course/devel
-Install Space:      [unused] /home/user/catkin_ws_course/install
-Log Space:         [missing] /home/user/catkin_ws_course/logs
-Source Space:      [missing] /home/user/catkin_ws_course/src
+Build Space:       [missing] /home/user/catkin_ws/build
+Devel Space:       [missing] /home/user/catkin_ws/devel
+Install Space:      [unused] /home/user/catkin_ws/install
+Log Space:         [missing] /home/user/catkin_ws/logs
+Source Space:      [missing] /home/user/catkin_ws/src
 DESTDIR:            [unused] None
 ------------------------------------------------------------------
 Devel Space Layout:          linked
@@ -107,7 +107,7 @@ Workspace configuration appears valid.
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-WARNING: Source space `/home/user/catkin_ws_course/src` does
+WARNING: Source space `/home/user/catkin_ws/src` does
 not yet exist.
 ------------------------------------------------------------------
 ```

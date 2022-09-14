@@ -19,3 +19,4 @@ rosrun
 roslaunch
 rospack
 roscd
+rosls
