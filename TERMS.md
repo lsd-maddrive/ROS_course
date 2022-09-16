@@ -20,3 +20,4 @@ roslaunch
 rospack
 roscd
 rosls
+rosmsg

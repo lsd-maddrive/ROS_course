@@ -177,7 +177,7 @@ TURTLEBOT3_MODEL=waffle roslaunch turtlebot3_gazebo turtlebot3_world.launch z_po
 
 ```md
 :muscle: А давай перепишем под себя и `turtlebot3_slam/turtlebot3_slam.launch` и `turtlebot3_navigation/move_base.launch`? Тогда наш `turtlebot3_sim_mapping.launch` не будет требовать `TURTLEBOT3_MODEL` вообще!
-Можно и `turtlebot3_teleop/turtlebot3_teleop_key.launch` захватить, если хочется с клавиатуры управлять.ы
+Можно и `turtlebot3_teleop/turtlebot3_teleop_key.launch` захватить (переписать для себя), если хочется с клавиатуры управлять и не задавать переменную окружения (тут ее вообще можно убрать).
 ```
 
 > :muscle: Теперь задание серьезное, не каждый справится, но если сможешь - молодец!
