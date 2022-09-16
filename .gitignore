@@ -131,3 +131,6 @@ dmypy.json
 *.ZoneIdentifier
 
 super_robot_package
+
+# IDE artifacts 
+.vscode/
