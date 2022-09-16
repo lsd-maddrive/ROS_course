@@ -59,9 +59,3 @@ sudo apt-get install [имя пакета]
     sudo apt-get install ros-noetic-turtlesim
     ``` -->
 
-
-## Семантика в курсе
-
-```md
-:muscle: Текст задания
-```
