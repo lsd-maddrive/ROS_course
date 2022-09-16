@@ -12,3 +12,22 @@ The place for ROS course development
   - ms-iot.vscode-ros
   - ms-python.python
 - Готовность задавать вопросы, если что-то из тем не понятно!
+
+## Contributors
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/KaiL4eK">
+        <img src="https://avatars.githubusercontent.com/u/13577066?v=4?size=100" width="100px;" alt="" /> <br />
+        <sub><b>Девяткин Алексей</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/serykhelena">
+        <img src="https://avatars.githubusercontent.com/u/26322075?v=4?size=100" width="100px;" alt="" /> <br />
+        <sub><b>Серых Елена</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
