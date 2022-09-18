@@ -281,7 +281,7 @@ At time 6675.463
 А теперь стартуем его!
 
 ```bash
-roslaunch super_robot_package turtlebot3_start_sim.launch
+roslaunch super_robot_package turtlebot3_sim_start.launch
 ```
 
 Ах да, Rviz же после перезапуска сбивается...
@@ -328,7 +328,7 @@ roslaunch super_robot_package turtlebot3_start_sim.launch
 
 В окне сохранения пройди в папку пакета и там создай папку `rviz` и туда сохрани в файл под названием `sim_initial.rviz`.
 
-А тепееерь, магия, погнали в `turtlebot3_start_sim.launch` и там к запуску Rviz добавь `args="-d $(find super_robot_package)/rviz/sim_initial.rviz"`. Это по сути путь до нашей конфигурации в пакете.
+А тепееерь, магия, погнали в `turtlebot3_sim_start.launch` и там к запуску Rviz добавь `args="-d $(find super_robot_package)/rviz/sim_initial.rviz"`. Это по сути путь до нашей конфигурации в пакете.
 
 Добавил? Отлично, перезапускай!
 

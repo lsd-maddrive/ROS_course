@@ -21,7 +21,7 @@
 
 Думаю, я порадую, если скажу, что вместо запуска двух терминалов (с симулятором и построением карты) можно записать все в один запуск!
 
-Для начала нам нужно создать папку `launch` и в ней сделать файл `turtlebot3_sim_mapping.launch` с начинкой:
+Для начала нам нужно создать папку `launch` и в ней сделать файл `turtlebot3_for_fun.launch` с начинкой:
 
 ```xml
 <launch>
@@ -37,12 +37,12 @@
 Ну, что говорить, сохрани и давай запустим!
 
 ```bash
-TURTLEBOT3_MODEL=waffle roslaunch super_robot_package turtlebot3_sim_mapping.launch
+TURTLEBOT3_MODEL=waffle roslaunch super_robot_package turtlebot3_for_fun.launch
 ```
 
 > Без пересборки ROS сразу видит, что у нас в пакете есть launch файл.
 
-Работает! Появился интерфейс симулятора и Rviz с картой! Убедил? Это работает =) 
+Работает! Появился интерфейс симулятора и Rviz с картой! Убедил? Это работает =)
 
 Итак, теперь подбронее про сам launch формат, он всегда имеет единственный тэг `<launch>`, который обрамляет весь файл!
 
@@ -113,6 +113,7 @@ roscat turtlebot3_gazebo turtlebot3_world.launch
 > Хорошим тоном при написании скрипта является написание атрибута `doc`, который объясняет, что это за параметр. Не переживай, это мы тоже поправим.
 
 `node` - тэг, указывающий запуск программы. Ведь launch - это текстовый файл, который включает инструкции к запуску, а вот **node** (**узел**) в ROS - это сама программа или скрипт, которые содержит исходный код. То есть, сколько не включай один launch в другой, кто-то из них должен стартовать какие-то программы (узлы). Подробнее разберемся позже!
+
 `param` - подобно переменным окружения в терминале, в ROS есть **параметры**, которые можно задать и тем самым настроить узлы (программы). Это тоже на сладенькое оставим =)
 
 Так, ну теперь мы тут нашли кучу точек для улучшения, значит пора исправлять все то, что нам не нравится!
@@ -169,23 +170,23 @@ TURTLEBOT3_MODEL=waffle roslaunch turtlebot3_gazebo turtlebot3_world.launch z_po
 
 Пора применять на практике!
 
-```md
-:muscle: Обнови файл `turtlebot3_sim_mapping.launch`, чтобы он использовал `turtlebot3_world.launch` из твоего пакета и пропиши новое положение (а может и модель) через аргументы. Обязательно проверь, что при запуске все ок.
-```
+> :muscle: Обнови файл `turtlebot3_for_fun.launch`, чтобы он использовал `turtlebot3_world.launch` из твоего пакета и пропиши новое положение (а может и модель) через аргументы.
+> 
+> Обязательно проверь, что при запуске все ок.
 
-> Вот подлянка, для `turtlebot3_slam/turtlebot3_slam.launch` и `turtlebot3_navigation/move_base.launch` все еще нужен `TURTLEBOT3_MODEL`.
+Вот подлянка, для `turtlebot3_slam/turtlebot3_slam.launch` и `turtlebot3_navigation/move_base.launch` все еще нужен `TURTLEBOT3_MODEL`.
 
-```md
-:muscle: А давай перепишем под себя `turtlebot3_slam/turtlebot3_slam.launch`, `turtlebot3_slam/turtlebot3_gmapping.launch`, `turtlebot3_navigation/move_base.launch`? Тогда наш `turtlebot3_sim_mapping.launch` не будет требовать `TURTLEBOT3_MODEL` вообще!
-Можно и `turtlebot3_teleop/turtlebot3_teleop_key.launch` захватить (переписать для себя), если хочется с клавиатуры управлять и не задавать переменную окружения (тут ее вообще можно убрать).
-```
+> :muscle: А давай перепишем под себя `turtlebot3_slam/turtlebot3_slam.launch`, `turtlebot3_slam/turtlebot3_gmapping.launch`, `turtlebot3_navigation/move_base.launch`? Тогда launch-файлы из нашего пакета не будут требовать `TURTLEBOT3_MODEL` вообще! 
+> 
+> Можно и `turtlebot3_teleop/turtlebot3_teleop_key.launch` захватить (переписать для себя), если хочется с клавиатуры управлять и не задавать переменную окружения (тут ее вообще можно убрать).
 
-> :muscle: Теперь задание серьезное, не каждый справится, но если сможешь - молодец!
+> :muscle: Теперь задание серьезное, не каждый справляется, но я верю - ты сможешь!
 > Разберись в запуске `turtlebot3_world.launch` и найди, где и что управляет запуском GUI Gazebo (интерфейс). Теперь, в launch добавь аргумент, чтобы управлять этим (назови, например, аргумент `gazebo_gui`). По-умолчанию сделай `false`.
-> Получилось, а теперь сделай в `turtlebot3_sim_mapping.launch` тоже аргумент, чтобы можно было управлять этим при запуске `turtlebot3_sim_mapping.launch`, например: 
+> 
+> Получилось? А теперь сделай в `turtlebot3_for_fun.launch` тоже аргумент, чтобы можно было управлять этим при запуске `turtlebot3_for_fun.launch`, например: 
 > 
 > ```bash
-> roslaunch super_robot_package turtlebot3_sim_mapping.launch gazebo_gui:=true
+> roslaunch super_robot_package turtlebot3_for_fun.launch gazebo_gui:=true
 > ```
 > 
 > Обязательно проверь результат своих трудов!
