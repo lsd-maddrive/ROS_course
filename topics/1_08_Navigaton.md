@@ -151,7 +151,7 @@ roscat turtlebot3_navigation move_base.launch
 > :muscle: Попробуй написать launch-файл `turtlebot3_gazebo_slam.launch`, в котором будет запуск `turtlebot3_sim_start.launch`, `turtlebot3_my_gmapping.launch`, `turtlebot3_move_base.launch` и не забудь добавить запуск `rviz`
 
 <p align="center">
-<img src=../assets/01_10_slam.gif width=900/>
+<img src=../assets/01_10_slam.gif width=500/>
 </p>
 
 
