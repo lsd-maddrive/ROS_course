@@ -32,5 +32,17 @@ The place for ROS course
         <sub><b>Серых Елена</b></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/lasauveetgarde">
+        <img src="https://avatars.githubusercontent.com/u/91496274?v=4?v=4?size=100" width="100px;" alt="" /> <br />
+        <sub><b>Масленникова Екатерина</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Alakeyska">
+        <img src="https://avatars.githubusercontent.com/u/91379535?v=4?size=100" width="100px;" alt="" /> <br />
+        <sub><b>Саламахин Антон</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
