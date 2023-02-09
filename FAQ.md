@@ -18,6 +18,15 @@ echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
+Если используется в качестве оболочки zsh, то пользуется немного другим `setup` файлом:
+
+```bash
+# Активация ROS при каждом запуске терминала
+echo "source /opt/ros/noetic/setup.zsh" >> ~/.zshrc
+# Активация ROS в этом терминале
+source ~/.zshrc
+```
+
 ## Как установить пакеты ROS?
 
 Вот такой командой мы устанавливаем пакеты в Ubuntu:
