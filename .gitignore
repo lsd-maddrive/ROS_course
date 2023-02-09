@@ -134,3 +134,6 @@ super_robot_package
 
 # IDE artifacts 
 .vscode/
+
+# WSL artifacts
+*:Zone.Identifier
