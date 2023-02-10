@@ -1,6 +1,6 @@
-# ROS_course
+# Курс по ROS
 
-The place for ROS course
+Наш небольшой, но полезный, курс по инструменту ROS!
 
 ## Содержание
 
