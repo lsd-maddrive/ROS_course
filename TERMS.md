@@ -15,9 +15,9 @@
 
 ## Утилиты
 
-rosrun
-roslaunch
-rospack
-roscd
-rosls
-rosmsg
+- rosrun
+- roslaunch
+- rospack
+- roscd
+- rosls
+- rosmsg
