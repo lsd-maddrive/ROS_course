@@ -221,7 +221,7 @@ roscd study_pkg
 
 ```bash
 git init
-git checkout -b main
+git branch -M main
 ```
 
 Результат
