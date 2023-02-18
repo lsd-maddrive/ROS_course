@@ -5,6 +5,7 @@
 - [Как удобно управляться в системе пакетов ROS?](#как-удобно-управляться-в-системе-пакетов-ros)
 - [Я делаю `git commit`, а он хочет e-mail и имя](#я-делаю-git-commit-а-он-хочет-e-mail-и-имя)
 - [Как делать `git push` с паролем](#как-делать-git-push-с-паролем)
+- [Создал удаленный репозиторий с README, а он не дает сделать push и pull с ошибкой `fatal: refusing to merge unrelated histories`](#создал-удаленный-репозиторий-с-readme-а-он-не-дает-сделать-push-и-pull-с-ошибкой-fatal-refusing-to-merge-unrelated-histories)
 
 ## Как установить ROS?
 
@@ -123,6 +124,49 @@ git config user.name "User User"
 <p align="center">
 <img src=assets/faq_token_creation.png />
 </p>
+
+## Создал удаленный репозиторий с README, а он не дает сделать push и pull с ошибкой `fatal: refusing to merge unrelated histories`
+
+Это нередкая проблема на началах, когда отдельно создается локальный и отдельно удаленный репозиторий с README или другими файлами.
+
+Чаще при начале проекта сначала создается удаленный и просто клонируется, но попробуем решить проблему!
+
+Такая проблема при попытке push показывает:
+
+```console
+To github.com:KaiL4eK/my-new-super-repo.git
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'git@github.com:KaiL4eK/my-new-super-repo.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+```
+
+Подсказка pull не помогает с ошибкой:
+
+```console
+From github.com:KaiL4eK/my-new-super-repo
+ * branch            main       -> FETCH_HEAD
+fatal: refusing to merge unrelated histories
+```
+
+(Рекомендуем) Есть вариант сделать pull с опцией `--allow-unrelated-histories`:
+
+```bash
+git pull origin main --allow-unrelated-histories
+```
+
+Это сделает merge (слияние) историй коммитов и получится единая история, не забудь сделать push после этого!
+
+(Не рекомендуем) Другой вариант - сделать force push, это перепишет удаленную историю локальной. История удаленных коммитов при это будет удалена.
+
+```bash
+git push -u origin main -f
+```
+
+Еще раз подсветим, **force push не рекомендуем**, так как любое изменение истории коммитов нарушает связность.
 
 <!-- 
 ## Устанавливаем пакет для "Hello ROS"
