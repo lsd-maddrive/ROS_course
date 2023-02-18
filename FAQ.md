@@ -3,6 +3,7 @@
 - [Как установить ROS?](#как-установить-ros)
 - [Как установить пакеты ROS?](#как-установить-пакеты-ros)
 - [Как удобно управляться в системе пакетов ROS?](#как-удобно-управляться-в-системе-пакетов-ros)
+- [Я делаю `git commit`, а он хочет e-mail и имя](#я-делаю-git-commit-а-он-хочет-e-mail-и-имя)
 - [Как делать `git push` с паролем](#как-делать-git-push-с-паролем)
 
 ## Как установить ROS?
@@ -81,6 +82,31 @@ rosrun rospy_tutorials talker
 ```
 
 Утилиты `rospd` и `rosd` работают со стеком директорий. Их использование можно опустить до специальных приемов.
+
+## Я делаю `git commit`, а он хочет e-mail и имя
+
+Во время первого коммита Git может ругнуться:
+
+```console
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+```
+
+Значит надо настроить данные о пользователе:
+
+```bash
+git config user.email "user@mail.ru"
+git config user.name "User User"
+```
+
+> Использование опции `--global` настраивает почту и имя на всю систему. Без использования опции настройка применится только к репозиторию, в котором делается коммит.
 
 ## Как делать `git push` с паролем
 

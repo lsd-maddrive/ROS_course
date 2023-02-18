@@ -274,31 +274,10 @@ git commit -am "First package commit"
 ```
 
 > Опция `-a` делает `git add` ко всем изменениям учтенных (индексированных) файлов - упрощает нам задачу.
+
 > Опция `-m` устанавливает коммент к коммиту. Коммент пишется после опции.
 
-<details>
-  <summary>Если гит не хочет делать коммит и пишет просьбу указать "Ты кто такой?"</summary>
-
-```console
-*** Please tell me who you are.
-
-Run
-
-  git config --global user.email "you@example.com"
-  git config --global user.name "Your Name"
-
-to set your account's default identity.
-Omit --global to set the identity only in this repository.
-```
-
-Значит надо настроить данные о пользователе:
-
-```bash
-git config user.email "user@mail.ru"
-git config user.name "User User"
-```
-
-</details>
+> ❔ Если гит не хочет делать коммит и пишет просьбу указать "Ты кто такой?" (почта и имя), глянь в [FAQ раздел](../FAQ.md#я-делаю-git-commit-а-он-хочет-e-mail-и-имя)
 
 После остается только закинуть все сделанные коммиты (а их пока один штука) на удаленный репо:
 

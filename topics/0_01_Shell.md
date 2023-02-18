@@ -472,3 +472,5 @@ env | grep "HOME"
 
 - [Хороший справочки по Bash](https://ss64.com/bash/)
 - [Курс на Stepik: Введение в Linux](https://stepik.org/course/73/syllabus)
+- [Книги по Linux](https://disk.yandex.ru/d/_Rz_gcx8_GxHAA)
+- [Еще больше книг](https://disk.yandex.ru/d/bNepiHd3SQCZtg)
