@@ -4,7 +4,7 @@
 ## Содержание
 
 Для более удобной работы с Markdown используется extension [Markdown All in One](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one).  
-Для автогенерации содержания, выполните команду `Create Table of Contents` в палитре комманд VS code (`Ctrl+Shift+P`).  
+Для автогенерации содержания, выполните команду `Create Table of Contents` в палитре команд VS code (`Ctrl+Shift+P`).  
 Добавьте `<!-- omit from toc -->` над заголовком чтобы игнорировать его в оглавлении.
 
 - [Содержание](#содержание)
