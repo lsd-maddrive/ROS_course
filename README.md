@@ -1,5 +1,4 @@
 
-# Labs-and-not-only
 
 # Курс по ROS
 
