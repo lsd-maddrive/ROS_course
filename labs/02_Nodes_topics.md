@@ -216,7 +216,7 @@ rosmsg list
 
 > :mechanical_arm:	Запустите узел пакета `rospy_tutorials` с именем `listener`, но присвойте имя `__name:=listener2`. Проверьте с помощью `rqt_graph`, что оба `listener` подключилиь на общий топик.
 
-> :mechanical_arm:	Запустите узел пакета `rospy_tutorials` с именем `talker` и присвойте такое же имя `__name:=talker`. Убедитесь, что первый `talker` закрылся с сообщением о перехвате (`shutdown request: new node registered with same name`).
+> :mechanical_arm:	Запустите два узла из пакета `rospy_tutorials` с именем `talker` и присвойте им одинаковые имена `__name:=talker`. Убедитесь, что первый `talker` закрылся с сообщением о перехвате (`shutdown request: new node registered with same name`).
 
 
 ## Создание ROS Publisher с использованием rospy
@@ -384,7 +384,7 @@ rosrun rospy_tutorials listener __name:=listener
 
 > :mechanical_arm: Запустите узел `listener` из пакета `rospy_tutorials` без явного указания имени и посмотрите список активных узлов, обратите внимание на имя узла
 
-> :mechanical_arm: Запустите узел `talker` из пакета `roscpp_tutorials` без явного задания имени и убедитесь в отсутствии свойства анонимности. 
+> :mechanical_arm: Запустите узел `talker` из пакета `roscpp_tutorials` без явного задания имени и убедитесь в присутствии свойства анонимности. 
 
 > :mechanical_arm: Запустите мастера, один узел `talker` из пакета `rospy_tutorials` с заданием имени и два узла `listener` из пакета `rospy_tutorials` без задания имени. Проверьте `rqt_graph` и убедитесь, что оба `listener` анонимные и подписались на топик `/chatter`
 
@@ -418,7 +418,7 @@ rosrun rospy_tutorials listener __name:=listener
 <img src="../assets/lab2/image.png" width=200>
 </p>
 
-А теперь вопрос знатокам, как подключить эти два узла без переписывания кода? Ответ: мапирование топиков - запуск обработчика происходит следующим образом, вот примерчик:
+А теперь вопрос знатокам, как подключить эти два узла без переписывания кода? Ответ: мапирование топиков - запуск обработчика происходит следующим образом, вот примерчик мапирования топика `image` в `rgb_img`:
 
 ```bash
 rosrun usb_cam usb_cam_node image:=rgb_img
