@@ -228,13 +228,13 @@ ROS 2 видит только те пакеты, которые находятс
 Его нужно «подгружать» (source) в каждой новой сессии терминала.
 
 ```bash
-source ~/ros2_ws/devel/setup.zsh
+source ~/ros2_ws/install/setup.zsh
 ```
 
 Сделать это можно как и с системным ws:
 
 ```bash
-echo "source ~/ros2_ws/install/setup.bash" >> ~/.zshrc
+echo "source ~/ros2_ws/install/setup.zsh" >> ~/.zshrc
 ```
 
 Или открыть файл `~/.zshrc` и прописать ручками.
