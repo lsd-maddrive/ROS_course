@@ -4,544 +4,414 @@
 ## Содержание
 
 - [Содержание](#содержание)
-- [Распространенные практики](#распространенные-практики)
-  - [Объединение узлов под одним пространством имен](#объединение-узлов-под-одним-пространством-имен)
-  - [Мапирование топиков](#мапирование-топиков)
-  - [Подключение других launch-файлов](#подключение-других-launch-файлов)
-  - [Создание опций для launch-файлов](#создание-опций-для-launch-файлов)
-- [ROS параметры](#ros-параметры)
-- [ROS Python параметры](#ros-python-параметры)
-- [Управление параметрами](#управление-параметрами)
-  - [Сохранение и загрузка параметров](#сохранение-и-загрузка-параметров)
+- [Что мы сегодня научимся делать](#что-мы-сегодня-научимся-делать)
+- [Launch-файлы — наш новый лучший друг](#launch-файлы--наш-новый-лучший-друг)
+  - [Где хранить launch-файлы? И поехали](#где-хранить-launch-файлы-и-поехали)
+- [Параметры (Parameters) — конфигурируем узлы без правки кода](#параметры-parameters--конфигурируем-узлы-без-правки-кода)
+  - [Передача параметров через launch-файл](#передача-параметров-через-launch-файл)
+  - [Как передавать параметры при запуске узла (через командную строку)](#как-передавать-параметры-при-запуске-узла-через-командную-строку)
+- [Аргументы в launch файлах](#аргументы-в-launch-файлах)
+  - [Как это выглядит в коде launch-файла?](#как-это-выглядит-в-коде-launch-файла)
 - [Что нужно сделать?](#что-нужно-сделать)
-- [Вопросики](#вопросики)
-- [С чем познакомились?](#с-чем-познакомились)
-- [Полезные ресурсы](#полезные-ресурсы)
+  - [Основное задание](#основное-задание)
+  - [Задание Два](#задание-два)
+- [Вопросики ⁉️](#вопросики-️)
+- [С чем познакомились 📚?](#с-чем-познакомились-)
 
-Помните, когда мы делали с вами прошлую лабораторную работу, вы сталкивались с тем, что каждый узел нужно запускать в разных терминалах? Но мы с вами запускали по 2-3 узла, а что будет, если нужно одновременно запустить больше таких? Ведь в реальных системах может присутствовать 10, 20 и более узлов, что может вызвать огромную боль при включении/выключении/проверке всех узлов. Звучит как-то не очень. 
+## Что мы сегодня научимся делать
 
-Для облегчения жизни придумали специальный формат, основанный на формате `xml`. Суть данного формата в том, что он позволяет настраивать и запускать группы узлов. Это еще можно назвать скриптом запуска.
+Сегодня мы соберём всё, что научились делать в предыдущих лабораторных, в одну удобную систему:
 
-Для начала, попробуем рассмотреть простой launch-файл (так они называются, угадайте, как должна называться папка, в которой они хранятся). Смотрим 👇	
+- Запускать несколько узлов одной командой (`ros2 launch ...`)
+- Конфигурировать поведение узлов через параметры (частота публикации, пороги переполнения, имена топиков и т.д.)
+- Работать с системой координат робота с помощью TF2
+- Визуализировать всё в RViz2
 
-```xml
-<launch>
-    <node name="listener" pkg="rospy_tutorials" type="listener.py" output="screen"/>
-    <node name="talker" pkg="rospy_tutorials" type="talker.py" output="screen"/>
-</launch>
+В итоге у тебя будет настоящий «мини-робот»: публикатор чётных чисел, слушатель переполнения, статические трансформации между «базами» и «сенсорами», и всё это запускается одной кнопкой.
+
+## Launch-файлы — наш новый лучший друг
+
+Представь, что твой робот уже состоит из 8–10 разных узлов:
+
+- один публикует данные с лидара,
+- второй — с камеры,
+- третий считает одометрию,
+- четвёртый следит за батареей,
+- пятый запускает навигацию…
+
+Каждый раз запускать их вручную через   `ros2 run` в десяти разных терминалах — это быстро превратится в настоящий кошмар.
+Ты будешь тратить по 5 минут только на запуск, а если нужно поменять частоту публикации или имя топика — придётся править код или заново писать все команды.
+
+**Launch-файл решает эту проблему раз и навсегда.**
+
+Когда ты выполняешь команду:
+```bash
+ros2 launch мой_пакет крутой_запуск.launch.py
 ```
+ROS 2 читает этот файл и автоматически запускает всё, что ты там прописал.
+Одна команда — и вся система оживает. Красота!
 
->❔ Раньше мы запускали узел `talker`, указывая `rosrun rospy_tutorials talker`. Когда мы пишем на Python, мы создаем скрипты `.py`. Так что оригинально при работе с Python запускаемые файлы будут с расширением `.py`. А в пакете `rospy_tutorials` разработчики просто скопировали файл `talker.py` в `talker`. Можете убедиться сами, у них размер одинаковый.
-Основа launch-файла лежит в тэге `<launch>`, он оборачивает весь файл.
+**Почему launch-файлы — это важно в реальной жизни?**
 
-Далее вложенные тэги `<node>` задают запуск узлов. В качестве параметров тэгов указываются:
+- В промышленных и исследовательских роботах систем часто бывает десятки и сотни узлов.
+- Запускать их вручную невозможно.
+- При тестировании нужно быстро переключаться между разными конфигурациями (например: «режим отладки», «режим гонки», «режим с навигацией», «симуляция» и т.д.).
+- Launch-файлы позволяют хранить все настройки в одном месте, легко версионировать их через Git и делиться с командой.
+  
+В ROS 2 launch-файлы пишутся преимущественно на Python (рекомендуется) или на XML. Мы будем использовать Python — он гораздо гибче и мощ
 
-- `name` - имя, которое присваивается узлу в системе ROS (аналог `__name`)
-- `pkg` - название пакета, внутри которого лежит узел
-- `type` - название файла узла внутри пакета (для Pyhton - py-файлы, для C++ - исполняемые файл, там уж как назовете при компиляции)
-- `output` - (необязательный) режим вывода информации, есть варианты `screen` (в консоль) и `log` (по-умолчанию, в лог-файл)
 
->❔ При запуске launch-файла также запускается мастер (roscore), если он не был запущен ранее.
-Таким файлом из примера удобно пользоваться, так как вместо трех консолей потребуется единственная, в которую будет выкладываться вывод всех узлов, у которых `output="screen"`.
+### Где хранить launch-файлы? И поехали
 
-Кстати, такой файл уже есть в пакете `rospy_tutorials`, прочитать его можно командой:
+По соглашению ROS 2 все launch-файлы хранятся в папке `launch/` внутри твоего пакета:
 
 ```bash
-roscat rospy_tutorials talker_listener.launch
+
+~/ros2_ws/src/твой_пакет/
+├── launch/                  ← сюда кладём все .launch.py файлы
+├── params/                  ← сюда кладём YAML-файлы с параметрами
+├── study_pkg/               ← твои Python-узлы
+├── package.xml
+├── setup.py
+└── ...
+
 ```
 
-Утилита для запуска называется `roslaunch` и вот пример запуска такого файла из пакета `rospy_tutorials`:
+В пакете создаём папку `launch/`:
 
 ```bash
-roslaunch rospy_tutorials talker_listener.launch
+cd ~/ros2_ws/src/твой_пакет
+mkdir launch
 ```
 
-Выключение всех узлов из файла производится нажатием Ctrl+C в терминале, в котором запускали launch-файл. При этом система launch проверяет, что все узлы завершились.
-
->🦾	Напишите launch-файл `my_first.launch` с таким же содержанием и запустите его. Для этого нужно в пакете создать папку `launch` и в ней создать файл с расширением launch. Сделайте небольшую поправочку - измените имена узлов на `sender` и `receiver`. С помощью утилиты `roslaunch`  запустите файл из своего пакета `study_pkg` и убедитесь, что все работает.
-
-## Распространенные практики
-
-А теперь поговорим о наиболее применяемых практиках относительно launch-файлов.
-
-### Объединение узлов под одним пространством имен
-
-Допустим мы хотим запустить узлы в одном пространстве имен, так как они выполняют определенную задачу (являются подсистемой). Можно это сделать красиво с помощью тэга `<group>` и параметра `ns`:
-
-```xml
-<launch>
-    <group ns="my_namespace">
-        <node name="listener" pkg="rospy_tutorials" type="listener.py" output="screen"/>
-        <node name="talker" pkg="rospy_tutorials" type="talker.py" output="screen"/>
-    </group>
-</launch>
-```
-
->🦾	Объедините запускаемые узлы в файле `my_first.launch` в пространство `new_ns`
-
-### Мапирование топиков
-
-Часто неоходимо переименовать (мапировать) топики узлов. Делается это тэгами `<remap>` внутри тэга `<node>` и параметрами `from` и `to`:
-
-```xml
-<launch>
-    <node name="listener" pkg="rospy_tutorials" type="listener.py" output="screen">
-        <remap from="chatter" to="my_topic"/>
-    </node>
-    <node name="talker" pkg="rospy_tutorials" type="talker.py" output="screen">
-        <remap from="chatter" to="my_topic"/>
-    </node>
-</launch>
-```
-
->🦾	Смапируйте запускаемые узлы в файле `my_first.launch` к топику `new_topic`
-
-### Подключение других launch-файлов
-
-Иногда можно написать много простых launch-файлов и запустить все их с помощью одного launch-файла. Для этого существует тэг `<include>`:
-
-```xml
-<launch>
-    <include file="$(find study_pkg)/launch/otherfile.launch" />
-    <node name="listener" pkg="rospy_tutorials" type="listener.py" output="screen"/>
-    <node name="talker" pkg="rospy_tutorials" type="talker.py" output="screen"/>
-</launch>
-```
-
-Директива `(find study_pkg)` ищет пакет, имя которого передано аргументом (в нашем случае ищется путь до пакета `study_pkg`) и подставляет путь до него в случае удачного нахождения. Таким образом выполняется сначала launch-файл `otherfile.launch`, а затем остальное содержимое. Уровни вложенности launch-файлов не ограничены (насколько я знаю).
-
->🦾	Напишите launch-файл `another_one.launch` и добавьте его запуск в `my_first.launch` под пространством имен `new_ns`. Launch-файл `another_one.launch` должен запускать узел `listener` из пакета `roscpp_tutorials`, иметь имя `listener_cpp` и смапировать топик `chatter` к `new_topic`.
-
-### Создание опций для launch-файлов
-
-Иногда создание опреленной системы упрощается, если при запуске существует возможность передать опции файлу запуска. Для launch-файлов существует тэг `<arg>`, который добавляет аргументы launch-файлу:
-
-```xml
-<launch>
-    <arg name="new_topic_name" default="new_chatter" />
-
-    <node name="listener" pkg="rospy_tutorials" type="listener.py" output="screen">
-        <remap from="chatter" to="$(arg new_topic_name)"/>
-    </node>
-    <node name="talker" pkg="rospy_tutorials" type="talker.py" output="screen">
-        <remap from="chatter" to="$(arg new_topic_name)"/>
-    </node>
-</launch>
-```
-
-❔ Директива `(arg new_topic_name)` подставляет значение аргумента. При наличии параметра `default` в тэге `<arg>` установка параметра при запуске launch-файла не обязательна. Для задания значения аргумента выполнение roslaunch происходит следующим образом:
-
-```bash
-roslaunch rospy_tutorials talker_listener.launch new_topic_name:=my_topic
-```
-
-## ROS параметры
-
-Есть еще один аспект, который называется сервер параметров.
-
-✅ **Параметрами** в ROS называются просто данные, которые хранятся под определенными именами и пространствами имен. Как было рассмотрено ранее, запуск узла в пространстве имен меняет конечное имя узла, а также топика. Аналогично с этим, вся работа узла с параметрами (чтение, запись) происходит в том пространстве имен, которому он принадлежит.
-
-> Сервер параметров хранит параметры и привязан к мастеру. Перезапуск мастера приводит к потере всех ранее заданных параметров.
-
-Пора знакомиться с основной утилитой работы с параметрами =)
-
-```bash
-rosparam help
-```
-```
-rosparam is a command-line tool for getting, setting, and deleting parameters from the ROS Parameter Server.
-
-Commands:
-    rosparam set    set parameter
-    rosparam get    get parameter
-    rosparam load   load parameters from file
-    rosparam dump   dump parameters to file
-    rosparam delete delete parameter
-    rosparam list   list parameter names
-```
-
-Попробуем проверить список параметров в системе
-
-```bash
-rosparam list
-```
-```
-/rosdistro
-/roslaunch/uris/host_user_vb__35559
-/rosversion
-/run_id
-```
-
-Давайте поработаем с параметром /rosdistro
-
-```bash
-rosparam get /rosdistro
-```
-```
-noetic
-```
-Удивительно, правда? 🙈
-
-А теперь попробуем задать свой параметр и сразу прочитать его
-
-```bash
-rosparam set /my_param 'Hello =)'
-rosparam set /my_set '{ 'P': 10.0, 'I': 1.0, 'D' : 0.1 }'
-
-rosparam get /my_param
-rosparam get /my_set
-rosparam get /my_set/P
-```
-Результат:
-```
-Hello =)
-{D: 0.1, I: 1.0, P: 10.0}
-10.0
-```
-
-Вроде все логично 🐥 А теперь попробуйте перезапустить ячейку с выводом списка параметров в системе.
-
-Как видно из вывода хелпа, параметрами также можно управлять, удаляя их, также выгружать в файл и загружать из файла.
-
-## ROS Python параметры
-
-Теперь рассмотрим применение параметров внутри узлов.
-Дальнейшие примеры можно производить, вызвав в терминале команду `python`, тогда у вас откроется консоль Python и вводить туда по очереди. Или можно написать все в один скрипт с выводом с помощью `print()` или `rospy.loginfo()`. 
-
-Для начала стандартный и знакомый для Python узла код:
+Создай файл `launch/my_first_launch.py`:
 
 ```python
-import rospy
-rospy.init_node('params_study')
+
+#!/usr/bin/env python3
+
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='твой_пакет',           # ← замени на своё имя пакета
+            executable='even_number_publisher',
+            name='even_pub',
+            output='screen',
+        ),
+        Node(
+            package='твой_пакет',
+            executable='overflow_listener',
+            name='overflow_listener',
+            output='screen',
+        ),
+    ])
 ```
 
-Ну и начнем рассматривать, что же можно сделать с параметрами в `rospy`? 
+И теперь запускаем
 
-Рассмотрим основные типы обращений к параметрам:
+```bash
+
+cd ~/ros2_ws
+colcon build --packages-select твой_пакет
+
+ros2 launch твой_пакет my_first_launch.py
+
+```
+
+Поздравляю! Теперь вся система запускается одной командой 🚀
+
+**Как это работает?**
+
+- `LaunchDescription()` — это «список всего, что нужно запустить».
+- Каждый `Node(...)` — это описание одного узла.
+- Самое важное: функция обязательно должна называться `generate_launch_description()` — ROS 2 ищет именно её.
+
+**Launch-файлы тоже можно запускать внутри launch-файлов (вложенные запуски)**
+
+Очень часто бывает так, что у тебя уже есть готовый launch-файл от другого пакета (например, от Nav2, от симулятора Gazebo, от драйвера камеры и т.д.).
+
+ROS 2 позволяет вкладывать одни launch-файлы в другие. Это как матрёшка — ты можешь собрать сложную систему из уже готовых «кирпичиков».
+
+**Зачем это нужно?**
+
+- Не писать заново то, что уже кто-то сделал хорошо.
+- Запускать целые большие системы (навигацию, SLAM, симуляцию) одной строкой внутри своего launch-файла.
+- Легко комбинировать свои узлы с готовыми пакетами.
+
+**Как это делать?**
+
+Для включения другого launch-файла используется действие `IncludeLaunchDescription`.
 
 ```python
-distro = rospy.get_param('/rosdistro')
+
+# Подключаем другой launch-файл из этого же пакета
+my_other_launch = IncludeLaunchDescription(
+    PythonLaunchDescriptionSource([
+        get_package_share_directory('мой_пакет'),
+        '/launch/another_system.launch.py'
+    ])
+)
+
+return LaunchDescription([ my_other_launch, ... ])
+
 ```
-Обращение глобально - как видно, в начале стоит `/`. Не обращаем внимания на ns, ищем именно такой путь параметра и никак иначе!
+
+
+## Параметры (Parameters) — конфигурируем узлы без правки кода
+
+Представь, что у тебя есть узел `even_number_publisher`.
+Сегодня ты хочешь, чтобы он публиковал числа с частотой 10 Гц, а завтра — 5 Гц.
+Послезавтра порог переполнения должен быть 100, а через неделю — 200.
+Менять код каждый раз, пересобирать пакет и заново запускать — это очень неудобно и быстро надоедает.
+
+**Параметры решают эту проблему.**
+
+**Простыми словами:**
+
+**Параметр — это настраиваемая «настройка» узла, которую можно задать снаружи, не трогая исходный код.**
+
+Это как ручки и кнопки на микроволновке: ты можешь менять время и мощность, не разбирая саму микроволновку.
+
+В ROS 2 параметры могут быть:
+
+- целыми числами (int)
+- числами с плавающей точкой (float)
+- строками (string)
+- булевыми значениями (bool)
+- массивами и даже словарями
+
+Пример в классе узла (`even_number_publisher.py`)
 
 ```python
-my_set_param = rospy.get_param('my_set')
+
+def __init__(self):
+    super().__init__('even_pub')
+
+    # Объявляем параметры с значениями по умолчанию
+    self.declare_parameter('publish_frequency', 10.0)   # Гц
+    self.declare_parameter('overflow_threshold', 100)
+    self.declare_parameter('topic_name', '/even_numbers')
+
+    # Читаем их
+    self.freq = self.get_parameter('publish_frequency').value
+    self.threshold = self.get_parameter('overflow_threshold').value
+    self.topic = self.get_parameter('topic_name').value
+
+    self.publisher = self.create_publisher(Int32, self.topic, 10)
+    self.timer = self.create_timer(1.0 / self.freq, self.timer_callback)
+
 ```
-Обращение локально - в начале не стоит `/`. Допустим мы запустили узел, указав `ns:=my_ns`. Тогда вызов данной функции будет пытаться найти парметр по пути - `/my_ns/my_set` 
+
+### Передача параметров через launch-файл
+
+**Зачем вообще параметры в launch-файле?**
+
+**Параметры позволяют настраивать узлы снаружи, не меняя код .py-файла.**
+
+В launch-файле ты можешь:
+
+- Задать значения параметров прямо в коде launch-файла.
+- Загружать параметры из YAML-файла (самый удобный способ для больших проектов).
+- Делать параметры настраиваемыми при запуске (через командную строку).
+
+**Это делает твою систему гибкой: один и тот же launch-файл можно использовать для разных роботов, режимов (debug / release) или конфигураций.**
+
+Прямо в `Node()`
 
 ```python
-my_private_param = rospy.get_param('~private_param')
-```
-Обращение приватно, поиск будет по пути `/params_study/private_param`. Если задат ns - он будет добавлен перед именем узла. Например, `ns:=my_ns -> /my_ns/params_study/private_param`
+from launch import LaunchDescription
+from launch_ros.actions import Node
 
-Теперь на примере, можно установить разные типы параметров и посмотреть, как они будут формироваться. Зададим параметры из узла, локальный, глобальный и приватный. Первый агрумент - название параметра, второй - значение:
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='мой_пакет',
+            executable='even_number_publisher',
+            name='even_pub',
+            output='screen',
+            parameters=[
+                {'publish_frequency': 8.0},           # float
+                {'overflow_threshold': 80},           # int
+                {'topic_name': '/even_numbers_fast'}, # string
+                {'enable_logging': True},             # bool
+            ],
+        ),
+    ])
+
+```
+
+**Важные правила:**
+
+- `declare_parameter()` обязательно нужно вызывать перед `get_parameter()`.
+- Если параметр не объявлен, `get_parameter()` вернёт значение по умолчанию `None` → будет ошибка.
+- Лучше всегда задавать разумное значение по умолчанию.
+
+### Как передавать параметры при запуске узла (через командную строку)
+
+```bash
+ros2 run твой_пакет even_number_publisher \
+  --ros-args \
+  -p publish_frequency:=5.0 \
+  -p overflow_threshold:=50 \
+  -p topic_name:=/my_even_numbers
+
+```
+
+## Аргументы в launch файлах
+
+**Зачем нужны аргументы в launch-файле?**
+
+Представь, что у тебя есть машина.
+Ты можешь каждый раз перед поездкой залезать под капот и вручную менять настройки двигателя, подвески и расход бензина…
+
+А можешь просто сесть в салон и нажать кнопку: «Спортивный режим», «Экономичный режим» или «Зимний режим».
+
+**Аргументы launch-файла — это и есть такие «кнопки режимов».**
+
+Они позволяют менять поведение всей системы при запуске, не редактируя сам launch-файл каждый раз.
+
+Без аргументов тебе придётся каждый раз править launch-файл:
+
+```bash
+# Сегодня
+parameters=[{'publish_frequency': 20.0}]
+
+# Завтра
+parameters=[{'publish_frequency': 5.0}]
+```
+
+С аргументами ты пишешь launch-файл один раз, а потом просто запускаешь по-разному:
+
+```bash
+# Быстрый режим
+ros2 launch мой_пакет robot_system.launch.py publish_frequency:=20.0
+
+# Медленный режим
+ros2 launch мой_пакет robot_system.launch.py publish_frequency:=5.0
+
+# Совсем особый режим
+ros2 launch мой_пакет robot_system.launch.py publish_frequency:=15.0 overflow_threshold:=75
+```
+
+### Как это выглядит в коде launch-файла?
 
 ```python
-rospy.set_param('~ros_priv_param', 'Hi, I am private =)')
-rospy.set_param('ros_loc_param', 'Hi, I am local =)')
-rospy.set_param('/ros_glob_param', 'Hi, I am global =)')
+
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
+
+def generate_launch_description():
+
+    # ←←← Вот здесь мы объявляем аргументы
+    freq_arg = DeclareLaunchArgument(
+        'publish_frequency',           # имя аргумента
+        default_value='10.0',          # значение по умолчанию
+        description='Частота публикации чётных чисел (Гц)'
+    )
+
+    threshold_arg = DeclareLaunchArgument(
+        'overflow_threshold',
+        default_value='100',
+        description='Порог, после которого происходит переполнение'
+    )
+
+    # Получаем текущее значение аргумента
+    frequency = LaunchConfiguration('publish_frequency')
+    threshold = LaunchConfiguration('overflow_threshold')
+
+    return LaunchDescription([
+        freq_arg,          # не забудь добавить аргумент сюда!
+        threshold_arg,
+
+        Node(
+            package='твой_пакет',
+            executable='even_number_publisher',
+            name='even_pub',
+            parameters=[
+                {'publish_frequency': frequency},   # используем аргумент
+                {'overflow_threshold': threshold},
+            ],
+            output='screen',
+        ),
+    ])
+
 ```
 
-Выведем список после задания параметров (для примера было задано дополнительный ns - `sample_ns`):
+**Как запускать?**
 
 ```bash
-rosparam list
-```
-И получаем:
 
-```
-/sample_ns/params_study/ros_priv_param
-/sample_ns/ros_loc_param
-/ros_glob_param
-```
+# 1. Запуск с настройками по умолчанию
+ros2 launch твой_пакет robot_system.launch.py
 
-Все получилось!
+# 2. Запуск с переопределением аргументов
+ros2 launch твой_пакет robot_system.launch.py publish_frequency:=25.0 overflow_threshold:=60
 
-> ❔Глобальный не имеет префикса ns. Приватный отличается тем, что в его префиксе присутствует имя узла. Значит он относится конкретно к узлу. Соответственно, можно запустить много одинаковых узлов (например с помощью флага анонимности) и получить такое же количество параметров.
+# 3. Можно комбинировать с YAML
+ros2 launch твой_пакет robot_system.launch.py publish_frequency:=15.0
 
->🦾 А теперь с помощью утилиты `rosparam` проверьте значения заданных параметров `ros_priv_param`, `ros_glob_param`, `ros_loc_param`
-
-Значит так, мы научились получать параметры от сервера параметров, задавать (если их не существовало - создавать, функция все равно одна и та же). Еще один момент. Бывает такое, хотим работать с параметром, а его нету в сервере (причины могут быть разные). В этом случае при запросе происходит это:
-
-```python
-not_exist_param = rospy.get_param('i_do_not_exist')
-```
-И сейчас вы увидите огромную ошибку, которую пугаться не стоит 👹
-
-```
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-  File "/opt/ros/melodic/lib/python2.7/dist-packages/rospy/client.py", line 465, in get_param
-    return _param_server[param_name] #MasterProxy does all the magic for us
-  File "/opt/ros/melodic/lib/python2.7/dist-packages/rospy/msproxy.py", line 123, in __getitem__
-    raise KeyError(key)
-KeyError: 'i_do_not_exist'
-```
-
-В общем, решение этой проблемы достаточно простое: для начала решим вопрос по пути Python - ловим все исключения (ошибки) и после обрабатываем:
-
-```python
-try:
-    not_exist_param = rospy.get_param('i_do_not_exist')
-except:
-    not_exist_param = 'Okay, now it`s default time =0'
-```
-
-А еще можно задать значение по умолчанию прямо в вызов вторым аргументом:
-
-```python
-not_exist_param = rospy.get_param('i_do_not_exist', 'default_value')
-```
-
-И все работает (ура)!
-
-Теперь мы умеем и обрабатывать получение значения по-умолчанию. Есть еще функционал из туториала, удаление параметра, проверка существования параметра и получение списка. Зачем это может понадобиться решайте сами.
-
-```python
-# Мы этот параметр ставили ранее
-param_name_2_delete = '/ros_glob_param'
-
-# Проверим список параметров, только уже через Python
-param_list = rospy.get_param_names()
-rospy.loginfo(param_list)
-
-# Наличие можно проверить через функционал ROS    
-if rospy.has_param(param_name_2_delete):
-    rospy.loginfo('[ROSWay] Parameter exist')
-else:
-    rospy.loginfo('[ROSWay] Parameter not exist')
-    
-# И с проверкой удаляем его
-if rospy.has_param(param_name_2_delete):
-    rospy.delete_param(param_name_2_delete)
-    
-# Еще раз проверим:
-if rospy.has_param(param_name_2_delete):
-    rospy.loginfo('[ROSWay] Parameter exist')
-else:
-    rospy.loginfo('[ROSWay] Parameter not exist')
-```
-
-Если вывод похож на:
-```
-[ROSWay] Parameter exist
-[ROSWay] Parameter not exist
-```
-Значит вы справились с этой проблемой и большие молодцы!
-
-## Управление параметрами
-
-Сейчас хочется обратить внимание на приватные параметры с точки зрения практики. Обычно узлы стартуют с помощью launch-файлов, поэтому задаются параметры внутри с помощью тэгов `<param>`. Пример из одного из файлов планера:
-
-```xml
-    <param name="base_global_planner" value="global_planner/GlobalPlanner" />
-    <param name="planner_frequency" value="1.0" />
-    <param name="planner_patience" value="5.0" />
-```
-Таким образом задаются локальные параметры (с учетом ns).
-
-Еще немного для понимания, пример из драйвера камеры (внутри тэга `<node>` параметры задаются приватными!):
-
-```xml
-<node ns="stereo" name="left_camera" pkg="usb_cam" type="usb_cam_node" output="screen" >
-    <param name="video_device" value="/dev/video0" />
-	<param name="image_width" value="640" />
-	<param name="image_height" value="480" />
-</node>
-```
-
-Здесь с помощью параметров задается путь девайса (конкретный, так как таких может быть много) и размеры выходного изображения.
-
-### Сохранение и загрузка параметров
-
-Так как при закрытии мастера параметры теряются, было бы неплохо узнать, а как сохранять параметры в файл? А как загружать из файла? Такой функционал есть и утилита все та же:
-
-Сохраним все параметры в файл `/tmp/my_dump.yaml` (обычно расширение `.yaml`) начиная с пространства имен `/` - то есть все параметры. Флаг `-v` для визуального контроля:
-
-```bash
-rosparam dump -v '/tmp/my_dump.yaml' '/'
-```
-
-Теперь загрузим параметры из файла `/tmp/my_dump.yaml`, но в новое пространство имен:
-
-```bash
-rosparam load -v '/tmp/my_dump.yaml' '/my_new_ns_just_to_make_it_long_for_control'
-```
-Выведем список параметров командой:
-
-```bash
-rosparam list
-```
-Наши параметры будут следующие:
-
-```
-/my_new_ns_just_to_make_it_long_for_control/ros_glob_param
-/my_new_ns_just_to_make_it_long_for_control/rosdistro
-/my_new_ns_just_to_make_it_long_for_control/roslaunch/uris/host_user_vb__38669
-/my_new_ns_just_to_make_it_long_for_control/rosversion
-/my_new_ns_just_to_make_it_long_for_control/run_id
-/my_new_ns_just_to_make_it_long_for_control/sample_ns/params_study/ros_priv_param
-/my_new_ns_just_to_make_it_long_for_control/sample_ns/ros_loc_param
-/ros_glob_param
-/rosdistro
-/roslaunch/uris/host_user_vb__38669
-/rosversion
-/run_id
-/sample_ns/params_study/ros_priv_param
-/sample_ns/ros_loc_param
-```
-
-Как видим, у нас появилась полная копия параметров, только в новом пространстве имен. Еще немного практики для понимания пространства имен
-
-Сохраним параметры тольько из `sample_ns`
-
-```bash
-rosparam dump -v '/tmp/my_dump_special_ns.yaml' '/sample_ns'
-```
-Загрузим их в новое пространство:
-
-```bash
-rosparam load -v '/tmp/my_dump_special_ns.yaml' '/new_ns_for_special'
-```
-Посмотрим список наших параметров командой:
-
-```bash
-rosparam list
-```
-И вывод нам даст соответственно следующее:
-
-```
-/my_new_ns_just_to_make_it_long_for_control/ros_glob_param
-/my_new_ns_just_to_make_it_long_for_control/rosdistro
-/my_new_ns_just_to_make_it_long_for_control/roslaunch/uris/host_user_vb__38669
-/my_new_ns_just_to_make_it_long_for_control/rosversion
-/my_new_ns_just_to_make_it_long_for_control/run_id
-/my_new_ns_just_to_make_it_long_for_control/sample_ns/params_study/ros_priv_param
-/my_new_ns_just_to_make_it_long_for_control/sample_ns/ros_loc_param
-/new_ns_for_special/params_study/ros_priv_param
-/new_ns_for_special/ros_loc_param
-/ros_glob_param
-/rosdistro
-/roslaunch/uris/host_user_vb__38669
-/rosversion
-/run_id
-/sample_ns/params_study/ros_priv_param
-/sample_ns/ros_loc_param
-```
-
-> 🧠 А теперь мозговой штурм! На этом моменте можно очень хорошо понять принцип пространства имен:
-На это можно смотреть как на систему папок. Если мы указываем для сохранения конкретное пространство, то все, что лежит внутри ns (далее за `/` этой папки) будет сохранено. При загрузке, мы указываем папку, с которой начать запись. 
-
-Думаем, объяснять функционал `delete` сильно не стоит, поэтому сносим целое пространство и смотрим, что получилось:
-
-```bash
-rosparam delete -v '/my_new_ns_just_to_make_it_long_for_control'
-```
-
-Далее уже известная нам команда:
-
-```bash
-rosparam list
-```
-
-```
-/new_ns_for_special/params_study/ros_priv_param
-/new_ns_for_special/ros_loc_param
-/ros_glob_param
-/rosdistro
-/roslaunch/uris/host_user_vb__38669
-/rosversion
-/run_id
-/sample_ns/params_study/ros_priv_param
-/sample_ns/ros_loc_param
-```
-
-В итоге мы подчистили наш сервер параметров.
-
-Теперь к практическим навыкам - вспомним, что запуск launch-файла запускает также и мастера, если тот ранее не был запущен. А сервер параметров завязан на мастера. Значит может понадобиться функционал загрузки параметров на момент запуска узлов:
-
-```xml
-<rosparam file="config/costmap_common.yaml" command="load" ns="global_costmap" />
-```
-
-В этом примере показан тэг `<rosparam>` и его параметры. На самом деле, параметры схожи с опциями утилиты:
-
-- `file` - файл с сохраненными/подгружаемыми параметрами;
-- `command` - может быть `[load / dump / delete]`;
-- `ns` - пространство имен, куда загрузить / откуда сохранить / что удалить.
-
-> ❔ Формат `<имя параметра> : <значение>` - это специальный формат файлов `YAML`. Для массивов и вложенных параметров происходит обертка вложенности скобками `{}` или просто новой строкой и внутри по идентичному принципу.
-
-```yaml
-ros_glob_param: Hi, I am global =)
-rosdistro: 'melodic'
-roslaunch:
-  uris: {host_user_vb__38669: 'http://user-vb:38669/'}
-run_id: 1b078410-b789-11e8-91b9-0800278832b1
-sample_ns:
-  params_study: {ros_priv_param: 'Hi, I am private =)'}
-  ros_loc_param: Hi, I am local =)
 ```
 
 ## Что нужно сделать?
 
-Помимо заданий в самом топике, нужно сделать следующее:
+### Основное задание 
 
->🦾	Мы с вами разобрали launch-файлы и то, как с ними работать. Вот еще одно задание по ним: добавьте аргумент, чтобы можно было задавать новое имя топика в момент запуска launch-файла. Подсказка, как пробросить аргумент через тэг `<include>` есть в полезных ссылках. Таким образом, задаваемое имя топика должно учитываться как в файле `my_first.launch`, так и в файле `another_one.launch`.
+- Добавь в свой пакет папку `launch/` и `params/`.
+- Создай `launch-файл`: `robot_system.launch.py`, который запускает:
+    - `even_number_publisher` с параметрами (частота 8 Гц, порог переполнения 80)
+    - `overflow_listener`
+- Сделай так, чтобы все топики и имена узлов можно было задавать через параметры launch-файла.
+- Залей всё на GitHub с осмысленным коммитом.
 
-> 🦾 Задачка посложнее. Схема прикреплена к задаче:
-> - Есть три программы, две из них (Polynominal и Summing) должны запускаться вместе и жить постоянно, обрабатывая запросы.
-> - Одна запускается как программа единичного запроса (Request).
-> - При запуске Request передается три числа, они через топик идут в узел полинома, там возводятся в степень в зависимости от положения, далее через топик в Summing, возвращается и отдается обратно как ответ.
-> <p align="center">
-> <img src=../assets/lab3/task.jpg width=500 />
-> </p>
+### Задание Два
 
-## Вопросики
+«Умный публикатор» — два режима работы одним launch-файлом
+Твоя задача — улучшить систему так, чтобы одним и тем же launch-файлом можно было запускать узел в двух разных режимах:
 
-- В чем предназначение `launch` файлов? В чем их главные преимущества?
-- Внимание! большой вопрос. Расшифруйте то, что происходит в этом launch-файле
+1. Режим «Быстрый» (для отладки)
+- Частота публикации: 20 Гц
+- Порог переполнения: 50
+- Имя топика: `/even_numbers_fast`
 
-```xml
-<launch>
-  <arg name="model" default="waffle" doc="model type [burger, waffle, waffle_pi]"/>
-  <arg name="x_pos" default="-2.0"/>
-  <arg name="y_pos" default="-0.5"/>
-  <arg name="z_pos" default="0.0"/>
-  
-  <param name="model" value="$(arg model)"/>
+2. Режим «Медленный» (для нормальной работы)
+- Частота публикации: 5 Гц
+- Порог переполнения: 150
+- Имя топика: `/even_numbers_slow`
 
-  <arg name="gz_gui" default="false"/>
+**Добавь в launch-файл аргумент, чтобы можно было легко выбирать режим:**
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_world.world"/>
-    <arg name="paused" value="false"/>
-    <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="$(arg gz_gui)"/>
-    <arg name="headless" value="false"/>
-    <arg name="debug" value="false"/>
-  </include>
-
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
-
-  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"  args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
-
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-    <param name="publish_frequency" type="double" value="50.0" />
-  </node>
-</launch>
+```bash
+ros2 launch твой_пакет robot_system.launch.py mode:=fast
+# или
+ros2 launch твой_пакет robot_system.launch.py mode:=slow
 ```
 
-## С чем познакомились?
+**📍📍📍📍Подсказка:**
 
-- Разобрались с утилитой `roslaunch` и рассмотрели ряд тэгов, используемых в формате `XML`.
-- Мы познакомились с сервером параметров и утилитой работы с параметрами и научились пользовать параметры в Python
-- Рассмотрели практические применения утилит и параметров в `roslaunch`, в том числе познакомились с утилитой `rosparam`
-  
-## Полезные ресурсы
+Можно использовать конструкцию:
 
-- [XML](http://wiki.ros.org/roslaunch/XML)
-- [Сервер параметров](http://wiki.ros.org/Parameter%20Server)
-- [Cтраница из туториала про параметры](http://wiki.ros.org/rospy_tutorials/Tutorials/Parameters)
-- [API rospy](http://docs.ros.org/api/rospy/html/)
-- [Полезная ссылка](http://wiki.ros.org/roslaunch/XML/include)
+```bash
+frequency = 20.0 if mode == 'fast' else 5.0
+threshold = 50 if mode == 'fast' else 150
+topic = '/even_numbers_fast' if mode == 'fast' else '/even_numbers_slow'
+```
+
+Затем передать эти переменные в parameters=[ {...} ].
+
+## Вопросики ⁉️
+
+- В чём главное преимущество launch-файлов перед ручным запуском ros2 run?
+- Как передать параметр в узел через launch-файл?
+- Что будет, если узел попробует прочитать параметр, который не был объявлен?
+
+
+## С чем познакомились 📚?
+
+- Launch-файлы (Python)
+- Параметры узлов + передача из launch
+- Организация большого проекта в одном пакете
